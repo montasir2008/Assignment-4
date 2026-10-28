@@ -1,0 +1,13 @@
+# Marble Solitaire board file.
+# O = marble, - = empty hole, X = not part of the board.
+# To win, jump marbles until exactly one is left, in any hole.
+#
+# 2 marbles touching diagonally. Diagonal jumps are not allowed.
+# Cannot be solved.
+XX---XX
+XX---XX
+-------
+---O---
+----O--
+XX---XX
+XX---XX

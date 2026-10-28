@@ -1,0 +1,13 @@
+# Marble Solitaire board file.
+# O = marble, - = empty hole, X = not part of the board.
+# To win, jump marbles until exactly one is left, in any hole.
+#
+# The classic starting position: 32 marbles, center empty.
+# Solvable (31 moves).
+XXOOOXX
+XXOOOXX
+OOOOOOO
+OOO-OOO
+OOOOOOO
+XXOOOXX
+XXOOOXX

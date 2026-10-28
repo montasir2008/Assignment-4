@@ -1,0 +1,12 @@
+# Marble Solitaire board file.
+# O = marble, - = empty hole, X = not part of the board.
+# To win, jump marbles until exactly one is left, in any hole.
+#
+# 6 marbles in a cross. Solvable (5 moves).
+XX---XX
+XX-O-XX
+--OOO--
+---O---
+---O---
+XX---XX
+XX---XX

@@ -1,0 +1,12 @@
+# Marble Solitaire board file.
+# O = marble, - = empty hole, X = not part of the board.
+# To win, jump marbles until exactly one is left, in any hole.
+#
+# 24 marbles in a diamond. Solvable (23 moves).
+XX-O-XX
+XXOOOXX
+-OOOOO-
+OOO-OOO
+-OOOOO-
+XXOOOXX
+XX-O-XX

@@ -1,0 +1,14 @@
+# Marble Solitaire board file.
+# O = marble, - = empty hole, X = not part of the board.
+# To win, jump marbles until exactly one is left, in any hole.
+#
+# 15 marbles in the shape of the letter L. Cannot be solved. A solver must
+# rule out every possibility, so this board is a good test of whether your
+# solver avoids re-exploring boards it has already seen.
+XXOO-XX
+XXOO-XX
+--OO---
+--O-OOO
+--OOOOO
+XX---XX
+XX---XX

@@ -1,0 +1,13 @@
+# Marble Solitaire board file.
+# O = marble, - = empty hole, X = not part of the board.
+# To win, jump marbles until exactly one is left, in any hole.
+#
+# 3 marbles in a line along the right edge. The only "jumps" would land
+# off the board or in a corner, which is not allowed. Cannot be solved.
+XX---XX
+XX---XX
+------O
+------O
+------O
+XX---XX
+XX---XX

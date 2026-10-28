@@ -1,0 +1,13 @@
+# Marble Solitaire board file.
+# O = marble, - = empty hole, X = not part of the board.
+# To win, jump marbles until exactly one is left, in any hole.
+#
+# 9 marbles in a tangle. There are many moves to try, but none of them
+# leads to a win. Cannot be solved.
+XX---XX
+XXOO-XX
+-OOO---
+-O-O---
+---OO--
+XX---XX
+XX---XX
