@@ -15,11 +15,28 @@ using namespace std;
  * TODO: Replace this comment with a description of this function
  * and how you implemented it.
  */
-bool solvePuzzle(MarbleBoard& board, Vector<Move>& moveHistory) {
-    /* TODO: Fill in this function. */
+
+bool solvePuzzleHelper(MarbleBoard& board, Vector<Move>& moveHistory, Set<BoardEncoding>& visited) {
+    if (board.isSolved()) return true;
+    if (visited.contains(board.encode())) return false;
+
+    Vector<Move> possibleMoves = board.findPossibleMoves();
+
+    for (Move move : possibleMoves) {
+        board.makeMove(move);
+        if (solvePuzzleHelper(board, moveHistory += move, visited)) return true;
+        visited.add(board.encode());
+        moveHistory.remove(moveHistory.size()-1);
+        board.undoMove(move);
+    }
+
     return false;
 }
 
+bool solvePuzzle(MarbleBoard& board, Vector<Move>& moveHistory) {
+    Set<BoardEncoding> visited;
+    return solvePuzzleHelper(board, moveHistory, visited);
+}
 
 /* * * * * * Test Cases * * * * * */
 
@@ -82,4 +99,46 @@ PROVIDED_TEST("solvePuzzle: unsolvable 15-marble board (needs the explored-board
     bool solved = true;
     TIME_OPERATION(15, solved = solvePuzzle(board, moves));
     EXPECT(!solved);
+}
+
+STUDENT_TEST("Solver saves a complete three-move solution") {
+    Grid<Marble> original = loadBoard("marbles/boards/three-step.txt");
+    MarbleBoard board(original);
+    Vector<Move> moves;
+
+    EXPECT(solvePuzzle(board, moves));
+    EXPECT_EQUAL(moves.size(), 3);
+    EXPECT_EQUAL(checkSolution(original, moves), "");
+}
+
+STUDENT_TEST("Solver saves a complete solution for plus board") {
+    Grid<Marble> original = loadBoard("marbles/boards/plus.txt");
+    MarbleBoard board(original);
+    Vector<Move> moves;
+
+    EXPECT(solvePuzzle(board, moves));
+    EXPECT_EQUAL(moves.size(), 8);
+    EXPECT_EQUAL(checkSolution(original, moves), "");
+}
+
+STUDENT_TEST("Solver handles an unsolved board with no legal moves") {
+    MarbleBoard board(loadBoard("marbles/boards/off-the-edge.txt"));
+    MarbleBoard original = board;
+    Vector<Move> moves;
+
+    EXPECT(!solvePuzzle(board, moves));
+    EXPECT(moves.isEmpty());
+    EXPECT_EQUAL(board, original);
+    EXPECT_EQUAL(board.numMarbles(), original.numMarbles());
+}
+
+STUDENT_TEST("Solver removes failed moves from history") {
+    MarbleBoard board(loadBoard("marbles/boards/five-plus.txt"));
+    MarbleBoard original = board;
+    Vector<Move> moves;
+
+    EXPECT(!solvePuzzle(board, moves));
+    EXPECT(moves.isEmpty());
+    EXPECT_EQUAL(board, original);
+    EXPECT_EQUAL(board.numMarbles(), original.numMarbles());
 }

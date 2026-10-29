@@ -20,29 +20,252 @@ using namespace std;
  * NOTE: the prototype of required function canRedistrict must not be changed.
  */
 int subgridSum(Grid<int>& g, GridLocationRange range) {
-    return 0;
+    int sum = 0;
+    for (int i = range.startRow(); i <= range.endRow(); i++) {
+        for (int j = range.startCol(); j <= range.endCol(); j++) {
+            sum += g[i][j];
+        }
+    }
+    return sum;
 }
 
 void divideHorizontal(GridLocationRange range, int indexOfBottomMostRowInTopPart, GridLocationRange& topPart, GridLocationRange& bottomPart) {
+    topPart = GridLocationRange(range.startRow(), range.startCol(),indexOfBottomMostRowInTopPart, range.endCol());
+    bottomPart = GridLocationRange(indexOfBottomMostRowInTopPart+1, range.startCol(), range.endRow(), range.endCol());
 }
 
 void divideVertical(GridLocationRange range, int indexOfRightMostColInLeftSide, GridLocationRange& leftSide, GridLocationRange& rightSide) {
+    leftSide = GridLocationRange(range.startRow(), range.startCol(), range.endRow(), indexOfRightMostColInLeftSide);
+    rightSide = GridLocationRange(range.startRow(), indexOfRightMostColInLeftSide + 1, range.endRow(),range.endCol());
 }
 
+
+bool canRedistrictHelper(Grid<int>& populationGrid, GridLocationRange current, int& target) {
+    if (subgridSum(populationGrid, current) == target) return true;
+    if (subgridSum(populationGrid, current) % target != 0) return false;
+
+    for (int i = current.startRow(); i < current.endRow(); i++) {
+        GridLocationRange topPart;
+        GridLocationRange bottomPart;
+        divideHorizontal(current, i, topPart, bottomPart);
+        drawHorizSplit(populationGrid, current,i + 1 - current.startRow());
+
+        if (canRedistrictHelper(populationGrid, topPart, target) && canRedistrictHelper(populationGrid, bottomPart, target)) return true;
+    }
+
+    for (int i = current.startCol(); i < current.endCol(); i++) {
+        GridLocationRange leftSide;
+        GridLocationRange rightSide;
+        divideVertical(current, i, leftSide, rightSide);
+        drawVertSplit(populationGrid, current, i+1 - current.startCol());
+
+        if (canRedistrictHelper(populationGrid, rightSide, target) && canRedistrictHelper(populationGrid, leftSide, target)) return true;
+    }
+
+    return false;
+}
 
 /*
  * TODO: Replace this comment with a descriptive function
  * header comment.
  */
 bool canRedistrict(Grid<int>& populationGrid, int nDistricts) {
-    /* TODO: Implement this function. */
-    return false;
+    initForPopulationGrid(populationGrid, false);
+
+    GridLocationRange starter(0, 0, populationGrid.numRows() - 1, populationGrid.numCols() - 1);
+    int total = subgridSum(populationGrid, starter);
+    int target = total/nDistricts;
+    return canRedistrictHelper(populationGrid, starter, target);
 }
 
 /* * * * * * Test Cases * * * * * */
 
-// TODO: add your STUDENT_TEST test cases here!
+STUDENT_TEST("subgridSum handles a single cell, row, and column") {
+    Grid<int> grid = {
+        {1, 2, 3},
+        {4, 5, 6},
+        {7, 8, 9}
+    };
 
+    EXPECT_EQUAL(subgridSum(grid, GridLocationRange(1, 1, 1, 1)), 5);
+    EXPECT_EQUAL(subgridSum(grid, GridLocationRange(1, 0, 1, 2)), 15);
+    EXPECT_EQUAL(subgridSum(grid, GridLocationRange(0, 2, 2, 2)), 18);
+}
+
+STUDENT_TEST("subgridSum handles an offset rectangle and zeros") {
+    Grid<int> grid = {
+        {9, 9, 9, 9},
+        {9, 0, 2, 3},
+        {9, 4, 0, 6}
+    };
+
+    EXPECT_EQUAL(subgridSum(grid, GridLocationRange(1, 1, 2, 3)), 15);
+    EXPECT_EQUAL(subgridSum(grid, GridLocationRange(1, 1, 1, 1)), 0);
+    EXPECT_EQUAL(subgridSum(grid, grid.locations()), 69);
+}
+
+STUDENT_TEST("divideHorizontal preserves boundaries for every valid cut") {
+    GridLocationRange range(2, 3, 6, 7);
+
+    for (int cut = range.startRow(); cut < range.endRow(); cut++) {
+        GridLocationRange top, bottom;
+        divideHorizontal(range, cut, top, bottom);
+
+        EXPECT_EQUAL(top.startRow(), 2);
+        EXPECT_EQUAL(top.startCol(), 3);
+        EXPECT_EQUAL(top.endRow(), cut);
+        EXPECT_EQUAL(top.endCol(), 7);
+
+        EXPECT_EQUAL(bottom.startRow(), cut + 1);
+        EXPECT_EQUAL(bottom.startCol(), 3);
+        EXPECT_EQUAL(bottom.endRow(), 6);
+        EXPECT_EQUAL(bottom.endCol(), 7);
+    }
+}
+
+STUDENT_TEST("divideHorizontal splits a two-cell column") {
+    GridLocationRange range(0, 0, 1, 0);
+    GridLocationRange top, bottom;
+    divideHorizontal(range, 0, top, bottom);
+
+    EXPECT_EQUAL(top.startRow(), 0);
+    EXPECT_EQUAL(top.endRow(), 0);
+    EXPECT_EQUAL(top.startCol(), 0);
+    EXPECT_EQUAL(top.endCol(), 0);
+
+    EXPECT_EQUAL(bottom.startRow(), 1);
+    EXPECT_EQUAL(bottom.endRow(), 1);
+    EXPECT_EQUAL(bottom.startCol(), 0);
+    EXPECT_EQUAL(bottom.endCol(), 0);
+}
+
+STUDENT_TEST("divideVertical preserves boundaries for every valid cut") {
+    GridLocationRange range(2, 3, 6, 7);
+
+    for (int cut = range.startCol(); cut < range.endCol(); cut++) {
+        GridLocationRange left, right;
+        divideVertical(range, cut, left, right);
+
+        EXPECT_EQUAL(left.startRow(), 2);
+        EXPECT_EQUAL(left.startCol(), 3);
+        EXPECT_EQUAL(left.endRow(), 6);
+        EXPECT_EQUAL(left.endCol(), cut);
+
+        EXPECT_EQUAL(right.startRow(), 2);
+        EXPECT_EQUAL(right.startCol(), cut + 1);
+        EXPECT_EQUAL(right.endRow(), 6);
+        EXPECT_EQUAL(right.endCol(), 7);
+    }
+}
+
+STUDENT_TEST("divideVertical splits a two-cell row") {
+    GridLocationRange range(0, 0, 0, 1);
+    GridLocationRange left, right;
+    divideVertical(range, 0, left, right);
+
+    EXPECT_EQUAL(left.startRow(), 0);
+    EXPECT_EQUAL(left.endRow(), 0);
+    EXPECT_EQUAL(left.startCol(), 0);
+    EXPECT_EQUAL(left.endCol(), 0);
+
+    EXPECT_EQUAL(right.startRow(), 0);
+    EXPECT_EQUAL(right.endRow(), 0);
+    EXPECT_EQUAL(right.startCol(), 1);
+    EXPECT_EQUAL(right.endCol(), 1);
+}
+
+STUDENT_TEST("canRedistrictHelper handles completed and unsplittable cells") {
+    Grid<int> grid = {{6}};
+    int target = 6;
+
+    EXPECT(canRedistrictHelper(grid, grid.locations(), target));
+
+    target = 3;
+    EXPECT(!canRedistrictHelper(grid, grid.locations(), target));
+}
+
+STUDENT_TEST("canRedistrictHelper rejects a nondivisible subrange") {
+    Grid<int> grid = {{2, 3, 1, 4}};
+    int target = 5;
+
+    // The entire grid is divisible by 5, but this candidate piece is not.
+    GridLocationRange current(0, 0, 0, 2);
+    EXPECT(!canRedistrictHelper(grid, current, target));
+}
+
+STUDENT_TEST("canRedistrictHelper solves an offset subrange") {
+    Grid<int> grid = {
+        {10, 10, 10},
+        {10,  2,  3},
+        {10,  1,  4}
+    };
+    GridLocationRange current(1, 1, 2, 2);
+    int target = 5;
+
+    EXPECT(canRedistrictHelper(grid, current, target));
+}
+
+STUDENT_TEST("canRedistrict handles one district") {
+    Grid<int> grid = {{2, 3}, {4, 5}};
+
+    EXPECT(canRedistrict(grid, 1));
+}
+
+STUDENT_TEST("canRedistrict handles single rows and columns") {
+    Grid<int> row = {{2, 3, 1, 4}};
+    Grid<int> column = {{2}, {3}, {1}, {4}};
+
+    EXPECT(canRedistrict(row, 2));
+    EXPECT(canRedistrict(column, 2));
+}
+
+STUDENT_TEST("canRedistrict allows unequal populations across a cut") {
+    Grid<int> grid = {{10, 10, 20, 20}};
+
+    // Three districts of 20: the first cut separates 20 from 40.
+    EXPECT(canRedistrict(grid, 3));
+}
+
+STUDENT_TEST("canRedistrict tries later cuts when earlier cuts fail") {
+    Grid<int> grid = {{1, 1, 2}};
+
+    // Cutting after the first cell fails; after the second succeeds.
+    EXPECT(canRedistrict(grid, 2));
+}
+
+STUDENT_TEST("canRedistrict requires both sides of a cut to succeed") {
+    Grid<int> grid = {{2, 1, 3}};
+
+    // The first cell is a district, but the remaining piece cannot
+    // form two districts of population 2.
+    EXPECT(!canRedistrict(grid, 3));
+}
+
+STUDENT_TEST("canRedistrict combines horizontal and vertical cuts") {
+    Grid<int> grid = {
+        {1, 1},
+        {2, 2}
+    };
+    Grid<int> original = grid;
+
+    EXPECT(canRedistrict(grid, 3));
+    EXPECT_EQUAL(grid, original);
+}
+
+STUDENT_TEST("canRedistrict rejects a divisible but unsplittable board") {
+    Grid<int> grid = {
+        {1, 3},
+        {3, 1}
+    };
+
+    EXPECT(!canRedistrict(grid, 4));
+}
+
+STUDENT_TEST("canRedistrict handles zero-population cells") {
+    Grid<int> grid = {{0, 2, 0, 2, 0}};
+
+    EXPECT(canRedistrict(grid, 2));
+}
 
 
 /* Please not add/modify/remove the PROVIDED_TEST entries below.

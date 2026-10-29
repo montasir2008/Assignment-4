@@ -49,7 +49,7 @@ int buggyCount(Vector<int> &v, int index, int sumSoFar) {
             return 0;   // base case failure: not zero, count = 0
         }
     } else {
-        int with = buggyCount(v, index + 1, sumSoFar += v[index]);
+        int with = buggyCount(v, index + 1, sumSoFar + v[index]);
         int without = buggyCount(v, index + 1, sumSoFar);
         return with + without;
     }

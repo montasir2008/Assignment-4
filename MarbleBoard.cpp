@@ -15,7 +15,36 @@ using namespace std;
  */
 Vector<Move> MarbleBoard::findPossibleMoves() const {
     Vector<Move> moves;
-    /* TODO: Fill in the remainder of this function. */
+    for (int row = 0; row < _grid.numRows(); row++) {
+        for (int col = 0; col < _grid.numCols(); col++) {
+            if (_grid[row][col] == MARBLE_OCCUPIED) {
+                GridLocation start(row, col);
+
+                GridLocation possible[4] = {
+                    {row - 2, col},
+                    {row + 2, col},
+                    {row, col - 2},
+                    {row, col + 2}
+                };
+
+                GridLocation possibleMarbles[4] = {
+                    {row - 1, col},
+                    {row + 1, col},
+                    {row, col - 1},
+                    {row, col + 1}
+                };
+
+                for (int i = 0; i < 4; i++) {
+                    if (_grid.inBounds(possible[i])) {
+                        if (_grid[possible[i]] == MARBLE_EMPTY && _grid[possibleMarbles[i]] == MARBLE_OCCUPIED) {
+                            Move valid = {start, possible[i]};
+                            moves.add(valid);
+                        }
+                    }
+                }
+            }
+        }
+    }
     return moves;
 }
 
@@ -24,7 +53,25 @@ Vector<Move> MarbleBoard::findPossibleMoves() const {
  * and how you implemented it.
  */
 void MarbleBoard::makeMove(Move move) {
-    /* TODO: Fill in this function. */
+    _grid[move.end] = MARBLE_OCCUPIED;
+    _grid[move.start] = MARBLE_EMPTY;
+
+    GridLocation changed = move.start;
+
+    if (move.end.col - move.start.col == 2) {
+        changed.col += 1;
+    }
+    else if (move.end.col - move.start.col == -2) {
+        changed.col -= 1;
+    }
+    else if (move.end.row - move.start.row == 2) {
+        changed.row += 1;
+    }
+    else if (move.end.row - move.start.row == -2) {
+        changed.row -= 1;
+    }
+    _grid[changed] = MARBLE_EMPTY;
+    _numMarbles--;
 }
 
 /*
@@ -32,14 +79,26 @@ void MarbleBoard::makeMove(Move move) {
  * and how you implemented it.
  */
 void MarbleBoard::undoMove(Move move) {
-    /* TODO: Fill in this function. */
+    _grid[move.end] = MARBLE_EMPTY;
+    _grid[move.start] =  MARBLE_OCCUPIED;
+
+    GridLocation changed = move.start;
+
+    if (move.end.col - move.start.col == 2) {
+        changed.col += 1;
+    }
+    else if (move.end.col - move.start.col == -2) {
+        changed.col -= 1;
+    }
+    else if (move.end.row - move.start.row == 2) {
+        changed.row += 1;
+    }
+    else if (move.end.row - move.start.row == -2) {
+        changed.row -= 1;
+    }
+    _grid[changed] = MARBLE_OCCUPIED;
+    _numMarbles++;
 }
-
-
-
-
-
-
 
 
 
@@ -176,4 +235,101 @@ PROVIDED_TEST("MarbleBoard::makeMove and undoMove: jump to the left, then undo")
     board.undoMove(move);
     EXPECT_EQUAL(board, original);
     EXPECT_EQUAL(board.numMarbles(), 2);
+}
+
+STUDENT_TEST("makeMove and undoMove work in all four directions") {
+    Vector<Move> moves = {
+        {{1, 3}, {3, 3}},  // down
+        {{5, 3}, {3, 3}},  // up
+        {{3, 1}, {3, 3}},  // right
+        {{3, 5}, {3, 3}}   // left
+    };
+
+    for (Move move : moves) {
+        MarbleBoard board;
+        MarbleBoard original = board;
+
+        GridLocation middle = {
+            (move.start.row + move.end.row) / 2,
+            (move.start.col + move.end.col) / 2
+        };
+
+        board.makeMove(move);
+
+        EXPECT_EQUAL(board.at(move.start), MARBLE_EMPTY);
+        EXPECT_EQUAL(board.at(middle), MARBLE_EMPTY);
+        EXPECT_EQUAL(board.at(move.end), MARBLE_OCCUPIED);
+        EXPECT_EQUAL(board.numMarbles(), 31);
+
+        board.undoMove(move);
+
+        EXPECT_EQUAL(board, original);
+        EXPECT_EQUAL(board.numMarbles(), 32);
+    }
+}
+
+STUDENT_TEST("Make and undo moves on two provided boards") {
+    Vector<string> files = {"plus.txt", "three-step.txt"};
+    Vector<Move> moves = {
+        {{3, 2}, {3, 0}},  // plus: jump left
+        {{4, 2}, {2, 2}}   // three-step: jump up
+    };
+
+    for (int i = 0; i < files.size(); i++) {
+        MarbleBoard board(loadBoard("marbles/boards/" + files[i]));
+        MarbleBoard original = board;
+        int count = board.numMarbles();
+        Move move = moves[i];
+        GridLocation middle = {
+            (move.start.row + move.end.row) / 2,
+            (move.start.col + move.end.col) / 2
+        };
+
+        board.makeMove(move);
+
+        EXPECT_EQUAL(board.at(move.start), MARBLE_EMPTY);
+        EXPECT_EQUAL(board.at(middle), MARBLE_EMPTY);
+        EXPECT_EQUAL(board.at(move.end), MARBLE_OCCUPIED);
+        EXPECT_EQUAL(board.numMarbles(), count - 1);
+
+        board.undoMove(move);
+
+        EXPECT_EQUAL(board, original);
+        EXPECT_EQUAL(board.numMarbles(), count);
+    }
+}
+
+STUDENT_TEST("findPossibleMoves on three-step board") {
+    MarbleBoard board(loadBoard("marbles/boards/three-step.txt"));
+    MarbleBoard original = board;
+
+    Set<Move> expected = {
+        {{3, 2}, {3, 4}},
+        {{3, 3}, {3, 1}},
+        {{4, 2}, {2, 2}},
+        {{4, 2}, {6, 2}}
+    };
+
+    Vector<Move> moves = board.findPossibleMoves();
+
+    EXPECT_EQUAL(moves.size(), 4);
+    EXPECT_EQUAL(toSet(moves), expected);
+    EXPECT_EQUAL(board, original);
+    EXPECT_EQUAL(board.numMarbles(), 4);
+}
+
+STUDENT_TEST("findPossibleMoves on plus board in all four directions") {
+    MarbleBoard board(loadBoard("marbles/boards/plus.txt"));
+
+    Set<Move> expected = {
+        {{2, 3}, {0, 3}},  // up
+        {{3, 2}, {3, 0}},  // left
+        {{3, 4}, {3, 6}},  // right
+        {{4, 3}, {6, 3}}   // down
+    };
+
+    Vector<Move> moves = board.findPossibleMoves();
+
+    EXPECT_EQUAL(moves.size(), 4);
+    EXPECT_EQUAL(toSet(moves), expected);
 }
