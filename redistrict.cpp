@@ -1,9 +1,12 @@
 /*
- * TODO: remove and replace this file header comment
- * You will edit and turn in this file.
- * Remove starter comments and add your own
- * comments on each function and on complex code sections.
+ * Name: Montasir Mahir and Weijia Li
+ * Course: CS106B
+ * Section: Thu 7:30 pm
+ * Description: This file checks whether a population grid can be split
+ * into districts with equal populations. It uses recursion to try
+ * horizontal and vertical cuts and displays the cuts being tested.
  */
+
 #include <iostream>    // for cout, endl
 #include <string>      // for string class
 #include "backtracking.h"
@@ -13,11 +16,9 @@
 using namespace std;
 
 
-/* TODO: Design and implement helpers
- * We offer some suggested helper prototypes. You are free to
- * to modify and extend on these suggestions as you see fit.
- *
- * NOTE: the prototype of required function canRedistrict must not be changed.
+/*
+ * This function returns the total population within the given range.
+ * It visits each row and column in the range and adds the cell values.
  */
 int subgridSum(Grid<int>& g, GridLocationRange range) {
     int sum = 0;
@@ -29,17 +30,32 @@ int subgridSum(Grid<int>& g, GridLocationRange range) {
     return sum;
 }
 
+/*
+ * This function splits a range into top and bottom parts.
+ * The given row index is the last row in the top part.
+ * It updates topPart and bottomPart without changing the grid.
+ */
 void divideHorizontal(GridLocationRange range, int indexOfBottomMostRowInTopPart, GridLocationRange& topPart, GridLocationRange& bottomPart) {
     topPart = GridLocationRange(range.startRow(), range.startCol(),indexOfBottomMostRowInTopPart, range.endCol());
     bottomPart = GridLocationRange(indexOfBottomMostRowInTopPart+1, range.startCol(), range.endRow(), range.endCol());
 }
 
+/*
+ * This function splits a range into left and right sides.
+ * The given column index is the last column in the left side.
+ * It updates leftSide and rightSide without changing the grid.
+ */
 void divideVertical(GridLocationRange range, int indexOfRightMostColInLeftSide, GridLocationRange& leftSide, GridLocationRange& rightSide) {
     leftSide = GridLocationRange(range.startRow(), range.startCol(), range.endRow(), indexOfRightMostColInLeftSide);
     rightSide = GridLocationRange(range.startRow(), indexOfRightMostColInLeftSide + 1, range.endRow(),range.endCol());
 }
 
-
+/*
+ * This function checks whether the current range can be divided into
+ * districts with the target population. It tries each horizontal and
+ * vertical cut and recursively checks both pieces. Returns true if
+ * a valid division is found and false if no cuts work.
+ */
 bool canRedistrictHelper(Grid<int>& populationGrid, GridLocationRange current, int& target) {
     if (subgridSum(populationGrid, current) == target) return true;
     if (subgridSum(populationGrid, current) % target != 0) return false;
@@ -66,8 +82,10 @@ bool canRedistrictHelper(Grid<int>& populationGrid, GridLocationRange current, i
 }
 
 /*
- * TODO: Replace this comment with a descriptive function
- * header comment.
+ * This function checks whether the grid can form nDistricts districts
+ * with equal populations. It starts the animation, calculates the
+ * population needed per district, and calls the recursive helper.
+ * Assumes nDistricts is positive and evenly divides the total population.
  */
 bool canRedistrict(Grid<int>& populationGrid, int nDistricts) {
     initForPopulationGrid(populationGrid, false);

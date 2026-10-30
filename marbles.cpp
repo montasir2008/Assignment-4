@@ -1,9 +1,14 @@
 /*
  * File: marbles.cpp
  * -----------------
- * TODO: Replace this comment with a description of your program, your name,
- * and your partner's name if you worked as a pair. Cite any sources of help.
+ * Name: Montasir Mahir and Weijia Li
+ * Course: CS106B
+ * Section: Thu 7:30 pm
+ * Description: This file solves Marble Solitaire using recursive
+ * backtracking. It records the solution moves and remembers board
+ * configurations that cannot lead to a solution.
  */
+
 #include <iostream>
 #include "backtracking.h"
 #include "hashset.h"
@@ -12,8 +17,10 @@
 using namespace std;
 
 /*
- * TODO: Replace this comment with a description of this function
- * and how you implemented it.
+ * This function tries each legal move and recursively searches for a solution.
+ * It skips board configurations already known to fail. If a move fails,
+ * it removes the move from the history and restores the board.
+ * Returns true when solved, keeping the successful moves in moveHistory.
  */
 
 bool solvePuzzleHelper(MarbleBoard& board, Vector<Move>& moveHistory, Set<BoardEncoding>& visited) {
@@ -32,6 +39,13 @@ bool solvePuzzleHelper(MarbleBoard& board, Vector<Move>& moveHistory, Set<BoardE
 
     return false;
 }
+
+/*
+ * This function starts the recursive search with an empty set of failed
+ * board configurations. Returns true if a solution is found and saves
+ * its moves in moveHistory. If no solution exists, returns false and
+ * leaves the board and moveHistory unchanged.
+ */
 
 bool solvePuzzle(MarbleBoard& board, Vector<Move>& moveHistory) {
     Set<BoardEncoding> visited;

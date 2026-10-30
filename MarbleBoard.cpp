@@ -1,17 +1,22 @@
 /*
  * File: MarbleBoard.cpp
  * ---------------------
- * TODO: Replace this comment with a description of your program, your name,
- * and your partner's name if you worked as a pair. Cite any sources of help.
+ * Name: Montasir Mahir and Weijia Li
+ * Course: CS106B
+ * Section: Thu 7:30 pm
+ * Description: This file manages a Marble Solitaire board. It includes
+ * functions for finding legal moves, making moves, and undoing moves.
  */
+
 #include "MarbleBoard.h"
 #include "set.h"
 #include "SimpleTest.h"
 using namespace std;
 
 /*
- * TODO: Replace this comment with a description of this function
- * and how you implemented it.
+ * This function returns all legal moves without changing the board.
+ * It checks each marble in all four directions for an empty landing
+ * square with a marble in between.
  */
 Vector<Move> MarbleBoard::findPossibleMoves() const {
     Vector<Move> moves;
@@ -49,8 +54,9 @@ Vector<Move> MarbleBoard::findPossibleMoves() const {
 }
 
 /*
- * TODO: Replace this comment with a description of this function
- * and how you implemented it.
+ * This function makes a move, assuming it is legal.
+ * It moves the marble to its destination, removes the marble jumped
+ * over, and decreases the marble count by one.
  */
 void MarbleBoard::makeMove(Move move) {
     _grid[move.end] = MARBLE_OCCUPIED;
@@ -75,8 +81,9 @@ void MarbleBoard::makeMove(Move move) {
 }
 
 /*
- * TODO: Replace this comment with a description of this function
- * and how you implemented it.
+ * This function undoes the last move, assuming it was legal.
+ * It returns the marble to its starting square, restores the marble
+ * jumped over, and increases the marble count by one.
  */
 void MarbleBoard::undoMove(Move move) {
     _grid[move.end] = MARBLE_EMPTY;
